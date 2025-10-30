@@ -1,6 +1,7 @@
 import sys
-import requests , json
+import requests , json , threading
 import random , time 
+from metrics import get_health_status , get_metrics, heartbeat
 
 config_file = sys.argv[1] if len(sys.argv) > 1 else "config.json"
 
@@ -20,13 +21,20 @@ id = config_data.get("id", "default_node")
 
 central_server_url = "http://localhost:8000"
 
+threading.Thread(target=heartbeat, args=(id, central_server_url), daemon=True).start()
+
 # Additional edge node logic would go here# For example, initializing network connections, starting services, etc.
 
 #register the node to the central server
+config_data["status"] = get_health_status()
+config_data["metrics"] = get_metrics()
+
 print("Registering to Central Server...")
 requests.post(f"{central_server_url}/node/register", json = config_data)
 
 while True:
+
+    print("Checking for updates...")
 
     try:
         if random.random() < 0.1:  # Simulate a 10% chance of failure
@@ -42,9 +50,11 @@ while True:
                 json.dump(config_data, file, indent=4)
             print("Update applied successfully.")
 
+        config_data["status"] = get_health_status()
+        config_data["metrics"] = get_metrics()
         requests.post(f"{central_server_url}/node/sync", json=config_data)
 
     except requests.ConnectionError:
         print("Connection error occurred. Retrying...")
         
-    time.sleep(random.randint(5, 10))
+    time.sleep(random.randint(30 , 60))
