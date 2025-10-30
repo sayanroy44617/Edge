@@ -16,7 +16,7 @@ except json.JSONDecodeError:
     print(f"Error decoding JSON from the configuration file '{config_file}'.")
     sys.exit(1)
 
-node_id = config_data.get("id", "default_node")
+id = config_data.get("id", "default_node")
 
 central_server_url = "http://localhost:8000"
 
@@ -29,19 +29,20 @@ requests.post(f"{central_server_url}/node/register", json = config_data)
 while True:
 
     try:
-        if random.random() < 0.2:  # Simulate a 20% chance of failure
+        if random.random() < 0.1:  # Simulate a 10% chance of failure
             raise requests.ConnectionError("Simulated connection error")
 
-        node_updates = requests.get(f"{central_server_url}/updates/{node_id}").json()
+        node_updates = requests.get(f"{central_server_url}/node/updates/{id}").json()
 
         if(node_updates.get("version")!= config_data.get("version")):
             print("New update found. Updating...")
             config_data = node_updates
-            # with open(config_file, 'w') as file:
-            #     file.write(str(config_data))
+            print(type(config_data))
+            with open(config_file, 'w') as file:
+                json.dump(config_data, file, indent=4)
             print("Update applied successfully.")
 
-        requests.post(f"{central_server_url}/sync", data={"node_id": node_id , "version": config_data.get("version")})
+        requests.post(f"{central_server_url}/node/sync", json=config_data)
 
     except requests.ConnectionError:
         print("Connection error occurred. Retrying...")
