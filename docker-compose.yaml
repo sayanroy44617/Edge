@@ -1,6 +1,16 @@
 version: '3.9'
 
 services:
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: secure_password
+    ports:
+      - "5432:5432"
+
   central-server:
     container_name: central-server
     image: central-server:latest
@@ -9,18 +19,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./central-server/data:/app/data
-    environment:
-      - DB_PATH=app/data/nodes.db
-
-  edge-node:
-    container_name: edge-node
-    image: edge-node:latest
-    build:
-      context: ./edge-node
-      dockerfile: Dockerfile
-    environment:
-      - CENTRAL_SERVER_URL=http://central-server:8000
     depends_on:
-      - central-server
+      - postgres
+
+#  edge-node:
+#    container_name: edge-node
+#    image: edge-node:latest
+#    build:
+#      context: ./edge-node
+#      dockerfile: Dockerfile
+#    environment:
+#      - CENTRAL_SERVER_URL=http://central-server:8000
+#    depends_on:
+#      - central-server

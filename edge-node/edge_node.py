@@ -1,9 +1,11 @@
-import sys
+import sys , dotenv
 import requests , json , threading
 import random , time 
 from metrics import get_health_status , get_metrics, heartbeat
 
 config_file = sys.argv[1] if len(sys.argv) > 1 else "config.json"
+
+dotenv.load_dotenv()
 
 try:
     with open(config_file, 'r') as file:
@@ -19,7 +21,7 @@ except json.JSONDecodeError:
 
 id = config_data.get("id", "default_node")
 
-central_server_url = "http://localhost:8000"
+central_server_url = dotenv.get_key(".env", "CENTRAL_SERVER_URL")
 
 threading.Thread(target=heartbeat, args=(id, central_server_url), daemon=True).start()
 
@@ -30,7 +32,29 @@ config_data["status"] = get_health_status()
 config_data["metrics"] = get_metrics()
 
 print("Registering to Central Server...")
-requests.post(f"{central_server_url}/node/register", json = config_data)
+print("Attempting initial registration with Central Server...")
+
+max_retries = 5
+retry_delay = 5 
+
+for attempt in range(max_retries):
+    try:
+        # Assuming config_data is the dictionary payload
+        response = requests.post(
+            f"{central_server_url}/node/register", 
+            json=config_data,
+            timeout=10
+        )
+        response.raise_for_status()
+        print("Registration successful!")
+        break
+    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+        print(f"Registration attempt {attempt + 1}/{max_retries} failed. {e}")
+        if attempt == max_retries - 1:
+            print("Maximum retries reached. Exiting.")
+            sys.exit(1)
+        time.sleep(retry_delay)
+
 
 while True:
 
