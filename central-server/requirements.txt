@@ -11,6 +11,7 @@ httptools==0.7.1
 idna==3.11
 psycopg2-binary==2.9.11
 pydantic==2.12.3
+pydantic-settings==2.11.0
 pydantic_core==2.41.4
 python-dotenv==1.2.1
 PyYAML==6.0.3

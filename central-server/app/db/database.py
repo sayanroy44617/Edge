@@ -1,9 +1,9 @@
 from typing import Annotated, Union
-
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from ..utils.utils import get_settings
 
 class Hero(SQLModel, table=True):
     id: Union[int, None] = Field(default=None, primary_key=True)
@@ -11,10 +11,9 @@ class Hero(SQLModel, table=True):
     age: Union[int, None] = Field(default=None, index=True)
     secret_name: str
 
+settings = get_settings()
 
-SQLALCHEMY_DATABASE_URL = "postgresql://app_user:secure_password@postgres:5432/app_db"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -53,4 +52,3 @@ if __name__ == "__main__":
         test_connection()
     except Exception as e:
         print(f"❌ CONNECTION ERROR: {e}")
-
