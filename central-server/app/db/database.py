@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from ..utils.utils import get_settings
+from utils.utils import get_settings
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
