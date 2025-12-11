@@ -1,4 +1,4 @@
-🤖 SRE Sentinel: AI-Powered Self-Healing Orchestrator
+🤖 Edge Sentinel: AI-Powered Self-Healing Orchestrator
 ---
 
 SRE Sentinel is an autonomous infrastructure platform that closes the loop between monitoring and remediation.
